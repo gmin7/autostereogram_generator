@@ -15,6 +15,8 @@
 #include <limits>
 #include <functional>
 #include <math.h>
+#include <string>
+#include <stdbool.h>
 
 
 double E = 540;
@@ -37,15 +39,17 @@ int main(int argc, char * argv[])
 
 	int width = 640;
 	int height = 360;
+	int num_channels;
+	char use_rgb;
+	
 	std::vector<unsigned char> depth_image(width*height);
 	std::vector<double> zbuffer(width*height);
-
 	double D = camera.d; // Focal length
 
 	// For each pixel (i,j)
-	for(unsigned i=0; i<height; ++i)
+	for(int i=0; i<height; ++i)
 	{
-		for(unsigned j=0; j<width; ++j)
+		for(int j=0; j<width; ++j)
 		{
 			// Set background color
 			depth_image[j+width*i] = 0;
@@ -65,23 +69,40 @@ int main(int argc, char * argv[])
 				linearized_depth = linearized_depth<1?linearized_depth:1;
 				depth_image[j+width*i] = 255.0*(linearized_depth);
 
-				// autostereogram
+				// used for generating autostereogram
 				zbuffer[j+width*i] = linearized_depth;
+				if(zbuffer[j+width*i]==0.416891 || linearized_depth==0.416891)
+				{
+					std::cout << "got here" << std::endl;
+				}
 			}
 		}
 	}
 
-	// Generate a noise image
+	// Generate GS noise image
 	std::vector<unsigned char> framebuffer(width*height);
-	for (int j=0; j<height; j++) { // generate a random-ish image
-		for (int i=0; i<width; i++) {
+	for (int j=0; j<height; j++) 
+	{
+		for (int i=0; i<width; i++) 
+		{
 			framebuffer[(i+j*width)] = (rand()%256)/2.0;
 		}
 	}
+	// Generate RGB noise image
+	std::vector<unsigned char> framebufferRGB(width*height*3);
+	for (int j=0; j<height; j++) 
+	{
+		for (int i=0; i<width; i++) 
+		{
+			framebufferRGB[3*(i+j*width)] 	= (rand()%256)/1.1;
+			framebufferRGB[3*(i+j*width) + 1] = (rand()%256)/1.1;
+			framebufferRGB[3*(i+j*width) + 2] = (rand()%256)/1.1;
+		}
+	}
+
 
 	for(int i = 0; i < height; i++)
 	{
-		// std::cout << "Entered row " << i << "\n";
 		int same[width];
 		int s;
 		int left, right;
@@ -97,42 +118,55 @@ int main(int argc, char * argv[])
 			s = separation(zbuffer[j+width*i]);
 			left = j - s/2;
 			right = left + s;
-			if(0<=left && right<width){
+			if(0<=left && right<width)
+			{
 				int visible;
 				int t=1;
-				float zt;
-				do{
+				double zt;
+				do
+				{
 					zt = zbuffer[i*width+j]+2*(2-mu*zbuffer[i*width+j])*t/(mu*E);
-					visible = zbuffer[width*(i-t) + j]<zt && zbuffer[width*(i+t) + j]<zt;
+					visible = (zbuffer[width*(i-t) + j] < zt) && (zbuffer[width*(i+t) + j] < zt);
 					t++;
 				} while(visible && zt<1);
-				if(visible){
+				if(visible)
+				{
 					int l = same[left];
-					while(l != left && l != right){
-						if( l < right ){
+					while(l != left && l != right)
+					{
+						if( l < right )
+						{
 							left = l;
 							l = same[left];
 						}
-						else{
+						else
+						{
 							same[left] = right;
 							left = right;
 							l = same[left];
 							right = l;
 						}
 					}
-				same[left] = right;
+					same[left] = right;
 				}
 			}
 		}
 
 		for(int j = width-1; j>=0; j--)
 		{
-			if(same[j] != j){
+			if(same[j] != j)
+			{
 				// std::cout << "got here";
 				framebuffer[i*width + j] = framebuffer[i*width + same[j]];
+				framebufferRGB[3*(i*width + j)] = framebufferRGB[3*(i*width + same[j])];
+				framebufferRGB[3*(i*width + j) + 1] = framebufferRGB[3*(i*width + same[j]) + 1];
+				framebufferRGB[3*(i*width + j) + 2] = framebufferRGB[3*(i*width + same[j]) + 2];
 			}
 		}
 	}
-	write_ppm("depth.ppm",depth_image,width,height,1);
-	write_ppm("autostereogram.ppm",framebuffer,width,height,1);
+
+	
+	write_ppm("../images/depth_map_bunny.ppm",depth_image,width,height,1);
+	write_ppm("../images/autostereogram_bunny_GS.ppm",framebuffer,width,height,1);
+	write_ppm("../images/autostereogram_bunny_RGB.ppm",framebufferRGB,width,height,3);
 }
