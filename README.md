@@ -4,8 +4,8 @@ Using the paper from https://www.cs.waikato.ac.nz/~ihw/papers/94-HWT-SI-IHW-SIRD
 Can you spot the bunny?
 
 Grayscale:  
-<img src="/images/autostereogram_bunny_GS.png"/>
+<img src="/images/autostereogram_bunny_GS.png"/>  
 RGB:  
-<img src="/images/autostereogram_bunny_RGB.png"/>
+<img src="/images/autostereogram_bunny_RGB.png"/>  
 Depth map(Spoiler!):  
-<img src="/images/depth_map_bunny.png"/>
+<img src="/images/depth_map_bunny.png"/>  
