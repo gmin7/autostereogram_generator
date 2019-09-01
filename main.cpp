@@ -71,10 +71,6 @@ int main(int argc, char * argv[])
 
 				// used for generating autostereogram
 				zbuffer[j+width*i] = linearized_depth;
-				if(zbuffer[j+width*i]==0.416891 || linearized_depth==0.416891)
-				{
-					std::cout << "got here" << std::endl;
-				}
 			}
 		}
 	}
