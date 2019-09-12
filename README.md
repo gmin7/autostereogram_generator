@@ -1,4 +1,4 @@
-## Random-Dot Autostereogram Generator
+## Random-Dot Stereogram Generator
 
 Using the paper from https://www.cs.waikato.ac.nz/~ihw/papers/94-HWT-SI-IHW-SIRDS-paper.pdf to turn my old ray caster into an autostereogram generator.  
 Perlin implementation adapted from source code found: http://eastfarthing.com/blog/2015-04-21-noise/  
